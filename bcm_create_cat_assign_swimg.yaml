@@ -1,0 +1,29 @@
+- name: BCM Ansible module Demo
+  hosts: bcm
+  gather_facts: false
+  collections:
+    - brightcomputing.bcm100
+  tasks:
+    - name: create login node category
+      category:
+        name: "zs-login-node-cat-test"
+        cloneFrom: default
+        state: present
+    - name: Assigning software image to login node category
+      category:
+        name: "zs-login-node-cat-test"
+        softwareImageProxy:
+           parentSoftwareImage: "login-image"
+#          revisionID: <integer>
+    - name: Mount an NFS share to FS mount in a Category
+      category:
+        name: "zs-login-node-cat-test"
+        fsmounts:
+          - device: "10.245.100.140:/zstest1"
+            mountpoint: "/mnt/zstest1"
+            filesystem: "nfs"
+            mountoptions: defaults
+#           dump: false
+#           extra_values: null
+#           fsck: NONE
+#           rdma: false

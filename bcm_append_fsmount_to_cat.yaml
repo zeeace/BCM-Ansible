@@ -1,0 +1,57 @@
+- name: BCM Ansible module demo
+  hosts: bcm
+  collections:
+    - brightcomputing.bcm100
+  gather_facts: false
+  tasks:
+    - name: Retrieve all categories information
+      category_info:
+        depth: 1
+        format: dict
+      register: categories_info
+
+    - name: Debug all categories information
+      debug:
+        var: categories_info
+
+    - name: Extract fsmounts for the specific category
+      set_fact:
+        current_fsmounts: >-
+          {{
+            categories_info.categories['zs-login-node-cat-test'].fsmounts
+            if 'zs-login-node-cat-test' in categories_info.categories
+            else []
+          }}
+
+    - name: Debug current fsmounts for the category
+      debug:
+        var: current_fsmounts
+
+    - name: Check if mount point already exists
+      set_fact:
+        mount_point_exists: >-
+          {{
+            current_fsmounts | selectattr('mountpoint', 'equalto', '/mnt/zstest2') | list | count > 0
+          }}
+
+    - name: Append new NFS mount to fsmounts if not already present
+      set_fact:
+        updated_fsmounts: >-
+          {{
+            current_fsmounts + [{
+              'device': '10.245.100.140:/zstest2',
+              'mountpoint': '/mnt/zstest2',
+              'filesystem': 'nfs'
+            }]
+          }}
+      when: not mount_point_exists
+
+    - name: Debug updated fsmounts
+      debug:
+        var: updated_fsmounts
+
+    - name: Update category with new fsmounts
+      category:
+        name: "zs-login-node-cat-test"
+        fsmounts: "{{ updated_fsmounts }}"
+      when: not mount_point_exists
