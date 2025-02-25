@@ -39,7 +39,7 @@
         updated_fsmounts: >-
           {{
             current_fsmounts + [{
-              'device': '10.245.100.140:/zstest2',
+              'device': '192.168.1.11:/zstest2',
               'mountpoint': '/mnt/zstest2',
               'filesystem': 'nfs'
             }]
